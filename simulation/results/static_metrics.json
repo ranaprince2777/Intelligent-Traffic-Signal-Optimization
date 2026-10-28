@@ -1,0 +1,11 @@
+{
+  "total_delay": 970.0,
+  "avg_queue": 19.4,
+  "max_queue": 36,
+  "throughput": 30,
+  "avg_travel_time": 9.07,
+  "p90_travel_time": 44.0,
+  "max_travel_time": 45.0,
+  "controller": "Static Fixed-Time Baseline",
+  "steps": 50
+}

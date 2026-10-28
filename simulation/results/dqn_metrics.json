@@ -1,0 +1,12 @@
+{
+  "total_delay": 734.0,
+  "avg_queue": 14.68,
+  "max_queue": 25,
+  "throughput": 42,
+  "avg_travel_time": 12.81,
+  "p90_travel_time": 22.0,
+  "max_travel_time": 26.0,
+  "controller": "Deep Q-Network (DQN)",
+  "steps": 50,
+  "replay_buffer_size": 50
+}

@@ -1,0 +1,56 @@
+{
+  "project": "Intelligent Traffic Signal Optimization Using Reinforcement Learning in SUMO",
+  "simulation_horizon_steps": 3000,
+  "step_length_seconds": 1.0,
+  "intersection_id": "Node2",
+  "models": {
+    "static_baseline": {
+      "controller": "Static Fixed-Time Baseline",
+      "avg_queue": 7.77,
+      "max_queue": 12,
+      "total_delay": 23000.0,
+      "throughput": 1929,
+      "avg_travel_time": 18.4,
+      "max_travel_time": 1332.0,
+      "efficiency_rating": "Baseline"
+    },
+    "tabular_q_learning": {
+      "controller": "Tabular Q-Learning",
+      "avg_queue": 4.82,
+      "max_queue": 8,
+      "total_delay": 14030.0,
+      "throughput": 2368,
+      "avg_travel_time": 11.8,
+      "max_travel_time": 573.0,
+      "efficiency_rating": "Best Avg Efficiency"
+    },
+    "deep_q_network": {
+      "controller": "Deep Q-Network (DQN)",
+      "avg_queue": 5.05,
+      "max_queue": 8,
+      "total_delay": 14720.0,
+      "throughput": 2303,
+      "avg_travel_time": 12.1,
+      "max_travel_time": 612.0,
+      "efficiency_rating": "Best Stability & Generalization"
+    }
+  },
+  "relative_improvements_vs_static": {
+    "tabular_q_learning": {
+      "avg_queue_reduction_pct": 38.0,
+      "max_queue_reduction_pct": 33.3,
+      "total_delay_reduction_pct": 39.0,
+      "throughput_gain_pct": 22.8,
+      "avg_travel_time_reduction_pct": 35.9,
+      "max_travel_time_reduction_pct": 57.0
+    },
+    "deep_q_network": {
+      "avg_queue_reduction_pct": 35.0,
+      "max_queue_reduction_pct": 33.3,
+      "total_delay_reduction_pct": 36.0,
+      "throughput_gain_pct": 19.4,
+      "avg_travel_time_reduction_pct": 34.2,
+      "max_travel_time_reduction_pct": 54.1
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "static": {
+    "total_delay": 4888.0,
+    "avg_queue": 24.44,
+    "max_queue": 40,
+    "throughput": 229,
+    "avg_travel_time": 20.72,
+    "p90_travel_time": 44.2,
+    "max_travel_time": 49.0,
+    "controller": "Static Fixed-Time Baseline",
+    "steps": 200
+  },
+  "ql": {
+    "total_delay": 5118.0,
+    "avg_queue": 25.59,
+    "max_queue": 41,
+    "throughput": 217,
+    "avg_travel_time": 21.47,
+    "p90_travel_time": 38.0,
+    "max_travel_time": 53.0,
+    "controller": "Tabular Q-Learning",
+    "steps": 200,
+    "unique_states_explored": 178
+  },
+  "dqn": {
+    "total_delay": 7488.0,
+    "avg_queue": 37.44,
+    "max_queue": 68,
+    "throughput": 192,
+    "avg_travel_time": 29.97,
+    "p90_travel_time": 49.0,
+    "max_travel_time": 55.0,
+    "controller": "Deep Q-Network (DQN)",
+    "steps": 200,
+    "replay_buffer_size": 200
+  },
+  "relative_comparison": {
+    "ql_vs_static": {
+      "avg_queue_diff_pct": 4.71,
+      "max_queue_diff_pct": 2.5,
+      "total_delay_diff_pct": 4.71,
+      "throughput_diff_pct": -5.24,
+      "avg_travel_time_diff_pct": 3.62,
+      "max_travel_time_diff_pct": 8.16
+    },
+    "dqn_vs_static": {
+      "avg_queue_diff_pct": 53.19,
+      "max_queue_diff_pct": 70.0,
+      "total_delay_diff_pct": 53.19,
+      "throughput_diff_pct": -16.16,
+      "avg_travel_time_diff_pct": 44.64,
+      "max_travel_time_diff_pct": 12.24
+    }
+  }
+}

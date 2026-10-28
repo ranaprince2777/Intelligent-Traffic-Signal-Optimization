@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoFlow RL — Intelligent Traffic Signal Optimization in SUMO</title>
+  <meta name="description" content="Interactive Reinforcement Learning traffic signal optimization dashboard comparing Static, Tabular Q-Learning, and Deep Q-Network (DQN) controllers in SUMO with real-time ITS metrics and detector analytics." />
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/src/styles/main.css" />
+  <link rel="icon" type="image/png" href="/images/logo.png" />
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="header-bar" id="mainHeader">
+    <div class="brand-section">
+      <div class="brand-logo-wrap">
+        <img src="/images/logo.png" alt="AutoFlow RL Logo" class="brand-logo-img" id="brandLogo" />
+      </div>
+      <div class="brand-titles">
+        <h1 id="appTitle">AutoFlow RL</h1>
+        <div class="tagline">SUMO Reinforcement Learning Signal Controller</div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="nav-tabs" id="navTabs" aria-label="Main Navigation">
+      <button class="nav-tab-btn active" data-tab="tab-sim" id="tabBtnSim">
+        <span>🚦</span> Live Simulation
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-charts" id="tabBtnCharts">
+        <span>📊</span> Live Telemetry
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-benchmarks" id="tabBtnBenchmarks">
+        <span>🏆</span> Research Benchmarks
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-code" id="tabBtnCode">
+        <span>⚙️</span> SUMO & Architecture
+      </button>
+    </nav>
+
+    <!-- System Status & Simulation Mode Indicator -->
+    <div class="header-status-area" style="display: flex; align-items: center; gap: 0.5rem;">
+      <div class="status-pill" id="serverStatusPill">
+        <div class="status-dot"></div>
+        <span id="serverStatusText">Dashboard Engine Active</span>
+      </div>
+      <div class="status-pill" id="bridgeStatusPill" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(148, 163, 184, 0.2); font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 9999px; display: inline-flex; align-items: center;">
+        <span id="bridgeStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; margin-right: 6px; display: inline-block;"></span>
+        <span id="bridgeStatusText" style="color: #cbd5e1;">Mode: High-Fidelity Client Emulation</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper" id="mainContent">
+
+    <!-- Hero Card Banner -->
+    <section class="hero-card" id="heroBanner" aria-label="Project Overview">
+      <div class="hero-text">
+        <h2>Intelligent <span>Traffic Signal Optimization</span> with RL</h2>
+        <p>
+          Adaptive intersection traffic control powered by <strong>Deep Q-Networks (DQN)</strong> and <strong>Tabular Q-Learning</strong> compared against a static baseline timer in the SUMO simulation environment. Developed at Indian Institute of Information Technology, Nagpur.
+        </p>
+        <div class="hero-badges">
+          <div class="hero-badge highlight"><span>🧠</span> State: 6 E1 Detectors + Phase</div>
+          <div class="hero-badge highlight"><span>🎯</span> Reward: −(Sum of Queues)</div>
+          <div class="hero-badge"><span>⚡</span> TraCI Real-Time Bridge</div>
+          <div class="hero-badge"><span>🔻</span> Queue Reduction: ~38%</div>
+          <div class="hero-badge"><span>🚀</span> Throughput Gain: +22%</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-Time KPI Cards Grid -->
+    <section class="kpi-grid" id="kpiGrid" aria-label="Key Performance Indicators">
+      <div class="kpi-card" id="kpiQueueCard">
+        <div class="kpi-top">
+          <span class="kpi-label">Average Queue</span>
+          <span class="kpi-icon">🚗</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpiAvgQueue">0.00</span>
+          <span class="kpi-unit">veh/lane</span>
+        </div>
+        <div class="kpi-delta good" id="kpiQueueDelta">
+          <span>↓ 38% vs Static (7.77)</span>
+        </div>
+      </div>
+
+      <div class="kpi-card" id="kpiMaxQueueCard">
+        <div class="kpi-top">
+          <span class="kpi-label">Peak Queue</span>
+          <span class="kpi-icon">🛑</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpiMaxQueue">0</span>
+          <span class="kpi-unit">max vehicles</span>
+        </div>
+        <div class="kpi-delta good" id="kpiMaxQueueDelta">
+          <span>↓ 33% (Max: 8 vs 12)</span>
+        </div>
+      </div>
+
+      <div class="kpi-card" id="kpiDelayCard">
+        <div class="kpi-top">
+          <span class="kpi-label">Total Delay</span>
+          <span class="kpi-icon">⏳</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpiTotalDelay">0</span>
+          <span class="kpi-unit">veh-seconds</span>
+        </div>
+        <div class="kpi-delta good" id="kpiDelayDelta">
+          <span>↓ 39% Total Wait Time</span>
+        </div>
+      </div>
+
+      <div class="kpi-card" id="kpiThroughputCard">
+        <div class="kpi-top">
+          <span class="kpi-label">Total Throughput</span>
+          <span class="kpi-icon">🏁</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpiThroughput">0</span>
+          <span class="kpi-unit">cleared cars</span>
+        </div>
+        <div class="kpi-delta good" id="kpiThroughputDelta">
+          <span>+22% Flow Rate</span>
+        </div>
+      </div>
+
+      <div class="kpi-card" id="kpiSignalPhaseCard">
+        <div class="kpi-top">
+          <span class="kpi-label">Active Phase</span>
+          <span class="kpi-icon">🚥</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" id="kpiPhaseName" style="color: var(--primary);">EB GREEN</span>
+        </div>
+        <div class="kpi-delta neutral" id="kpiPhaseTimerDelta">
+          <span id="kpiPhaseElapsed">Elapsed: 0.0s (Min: 5s)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: LIVE INTERSECTION SIMULATION        -->
+    <!-- ========================================== -->
+    <div class="tab-content active" id="tab-sim">
+      <div class="sim-layout">
+        
+        <!-- Left: Canvas Area & Toolbar -->
+        <div class="canvas-container">
+          <div class="canvas-header">
+            <div class="canvas-title-group">
+              <h3><span>🚦</span> SUMO 4-Way 6-Lane Intersection (<code style="color: var(--primary);">Node2</code>)</h3>
+              <p>Real-time vehicle dynamics with E1 Lane Area Detectors (e2_0 to e2_5) & adaptive phase switching</p>
+            </div>
+
+            <!-- Agent Model Selector -->
+            <div class="model-selector-bar" id="modelSelector">
+              <button class="model-btn static" data-model="static" id="btnModelStatic">
+                <span>🟡</span> Static Timer
+              </button>
+              <button class="model-btn ql" data-model="ql" id="btnModelQL">
+                <span>🟢</span> Q-Learning
+              </button>
+              <button class="model-btn active dqn" data-model="dqn" id="btnModelDQN">
+                <span>🔵</span> Deep Q-Network (DQN)
+              </button>
+            </div>
+          </div>
+
+          <!-- Canvas Display -->
+          <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="intersectionCanvas" width="960" height="600"></canvas>
+            
+            <!-- Canvas HUD -->
+            <div class="canvas-overlay-hud">
+              <div class="hud-pill">
+                <span>Model:</span>
+                <span class="val" id="hudModelName">DQN Neural Agent</span>
+              </div>
+              <div class="hud-pill">
+                <span>Sim Clock:</span>
+                <span class="val" id="hudSimClock">0.0s</span>
+              </div>
+              <div class="hud-pill">
+                <span>Active Reward R:</span>
+                <span class="val" id="hudRewardVal">0</span>
+              </div>
+            </div>
+
+            <!-- Traffic Signal Phase Pill -->
+            <div class="canvas-overlay-phase" id="phaseIndicatorOverlay">
+              <div class="phase-signal-lights">
+                <div class="signal-light red" id="hudLightRed"></div>
+                <div class="signal-light yellow" id="hudLightYellow"></div>
+                <div class="signal-light green active" id="hudLightGreen"></div>
+              </div>
+              <div class="phase-text-info">
+                <span class="phase-name" id="hudPhaseLabel">Phase 0: EB Green</span>
+                <span class="phase-timer" id="hudPhaseTimer">Hold: 0.0s</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simulation Controls Toolbar -->
+          <div class="sim-controls-bar" id="simToolbar">
+            <div class="btn-group">
+              <button class="sim-btn primary" id="btnPlayPause">
+                <span id="playPauseIcon">⏸</span> <span id="playPauseText">Pause</span>
+              </button>
+              <button class="sim-btn" id="btnStep">
+                <span>⏭</span> Step (0.5s)
+              </button>
+              <button class="sim-btn danger" id="btnReset">
+                <span>🔄</span> Reset Sim
+              </button>
+              <button class="sim-btn emergency" id="btnEmergency">
+                <span>🚑</span> Spawn Emergency
+              </button>
+            </div>
+
+            <div class="slider-group">
+              <label for="speedRange">Speed: <strong id="speedVal" style="color: var(--primary);">1.0x</strong></label>
+              <input type="range" class="custom-range" id="speedRange" min="0.5" max="5.0" step="0.5" value="1.0" />
+            </div>
+
+            <div class="slider-group">
+              <label for="densitySelect">Traffic Demand:</label>
+              <select id="densitySelect" style="background: rgba(30,41,59,0.8); border: 1px solid var(--border-subtle); color: #fff; padding: 0.35rem 0.6rem; border-radius: var(--radius-sm); font-size: 0.8rem;">
+                <option value="low">Low (Off-Peak)</option>
+                <option value="med" selected>Medium (Normal)</option>
+                <option value="high">High (Rush Hour)</option>
+              </select>
+            </div>
+
+            <div class="slider-group">
+              <label for="imbalanceRange">Surge Bias: <strong id="imbalanceVal" style="color: var(--primary);">Balanced</strong></label>
+              <input type="range" class="custom-range" id="imbalanceRange" min="0.2" max="0.8" step="0.1" value="0.5" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Real-Time RL Brain & Inspector -->
+        <div class="sim-sidebar">
+          
+          <!-- State Vector Inspector -->
+          <div class="inspector-card">
+            <div class="inspector-title">
+              <span>7-Dimensional State Vector</span>
+              <span id="stateVecPill">Inputs (s)</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+              Real-time vehicle counts from 6 E1 lane detectors + active phase index:
+            </p>
+            <div class="state-vector-list" id="stateVectorGrid">
+              <div class="state-item active"><span class="name">Node1_2_EB_0</span><span class="val" id="sv_eb0">0</span></div>
+              <div class="state-item active"><span class="name">Node1_2_EB_1</span><span class="val" id="sv_eb1">0</span></div>
+              <div class="state-item active"><span class="name">Node1_2_EB_2</span><span class="val" id="sv_eb2">0</span></div>
+              <div class="state-item"><span class="name">Node2_7_SB_0</span><span class="val" id="sv_sb0">0</span></div>
+              <div class="state-item"><span class="name">Node2_7_SB_1</span><span class="val" id="sv_sb1">0</span></div>
+              <div class="state-item"><span class="name">Node2_7_SB_2</span><span class="val" id="sv_sb2">0</span></div>
+              <div class="state-item" style="grid-column: span 3;"><span class="name">CURRENT_PHASE</span><span class="val" id="sv_phase">0</span></div>
+            </div>
+          </div>
+
+          <!-- Q-Value Action Inspector -->
+          <div class="inspector-card">
+            <div class="inspector-title">
+              <span>Policy Q-Value Estimator</span>
+              <span id="policyTypeLabel">DQN Inference</span>
+            </div>
+            <div class="action-bars">
+              <div class="action-row">
+                <div class="action-meta">
+                  <span>Action 0: Keep Current Phase</span>
+                  <span class="q-val" id="qValKeep">Q: 0.00</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill winner" id="qBarKeep" style="width: 50%;"></div>
+                </div>
+              </div>
+
+              <div class="action-row">
+                <div class="action-meta">
+                  <span>Action 1: Switch to Next Phase</span>
+                  <span class="q-val" id="qValSwitch">Q: 0.00</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" id="qBarSwitch" style="width: 50%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Agent Decision Badge -->
+            <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); font-size: 0.75rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+                <span style="color: var(--text-secondary);">Decided Action:</span>
+                <strong id="agentActionText" style="color: var(--accent-green); font-family: var(--font-mono);">0 (KEEP)</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary);">Min-Green Lock:</span>
+                <span id="minGreenLockStatus" style="font-family: var(--font-mono); color: var(--text-main);">Safe to Switch (Hold > 5s)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Model Description -->
+          <div class="inspector-card">
+            <div class="inspector-title">
+              <span>Selected Controller Overview</span>
+            </div>
+            <div id="modelDescBox" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6;">
+              <strong style="color: var(--primary);">Deep Q-Network (DQN):</strong>
+              Employs a 2-layer neural network with 24 hidden ReLU neurons. Generalizes state features to optimize green light time, preventing both unnecessary switches and long queue deadlocks.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: LIVE TELEMETRY CHARTS               -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="tab-charts">
+      <div class="charts-grid">
+        
+        <!-- Queue Length Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h4><span>📈</span> Real-Time Queue Length Timeline</h4>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot static"></div> Static (~7.8)</div>
+              <div class="legend-item"><div class="legend-dot ql"></div> Q-Learning (~4.8)</div>
+              <div class="legend-item"><div class="legend-dot dqn"></div> Active Simulation</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="queueChartCanvas"></canvas>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+            Shows the instantaneous sum of vehicles queued at all detectors. Notice how Q-Learning and DQN keep queues below 6, while Static spikes up to 12.
+          </p>
+        </div>
+
+        <!-- Reward Signal Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h4><span>🎯</span> RL Reward Signal Timeline <code>R = −(Queues)</code></h4>
+            <div class="chart-legend">
+              <div class="legend-item"><div class="legend-dot dqn" style="background: var(--accent-purple);"></div> Instantaneous Reward</div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="rewardChartCanvas"></canvas>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+            The RL agent objective is maximizing cumulative reward (minimizing negative total queues). Higher (closer to 0) indicates optimal clearance.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: ACADEMIC BENCHMARKS & RESEARCH      -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="tab-benchmarks">
+      
+      <!-- Academic Benchmark Table -->
+      <section class="benchmark-section">
+        <div class="section-head">
+          <h3>Statistical Model-Wise Benchmark (ITS Metrics)</h3>
+          <p>Official comparative evaluation from the IIIT Nagpur project across 3000 simulation steps in SUMO.</p>
+        </div>
+
+        <div class="comparison-table-wrap">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Model Architecture</th>
+                <th>Avg Queue</th>
+                <th>Max Queue</th>
+                <th>Total Delay</th>
+                <th>Throughput</th>
+                <th>Avg Travel Time</th>
+                <th>Max Travel Time</th>
+                <th>Efficiency Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-model static">🟡 Static Controller</span></td>
+                <td class="val-baseline">7.77 veh</td>
+                <td class="val-baseline">12 veh</td>
+                <td class="val-baseline">23,000 veh-s</td>
+                <td class="val-baseline">1,929 veh</td>
+                <td class="val-baseline">18.4 s</td>
+                <td class="val-baseline">1,332 s</td>
+                <td style="color: var(--accent-amber);">Baseline</td>
+              </tr>
+              <tr>
+                <td><span class="badge-model ql">🟢 Tabular Q-Learning</span></td>
+                <td class="val-gain">4.82 veh <small>(-38%)</small></td>
+                <td class="val-gain">8 veh <small>(-33%)</small></td>
+                <td class="val-gain">14,030 veh-s <small>(-39%)</small></td>
+                <td class="val-gain">2,368 veh <small>(+22%)</small></td>
+                <td class="val-gain">11.8 s <small>(-36%)</small></td>
+                <td class="val-gain">573 s <small>(-57%)</small></td>
+                <td style="color: var(--accent-green); font-weight: 600;">Best Avg Efficiency ⭐</td>
+              </tr>
+              <tr>
+                <td><span class="badge-model dqn">🔵 Deep Q-Network (DQN)</span></td>
+                <td class="val-gain">5.05 veh <small>(-35%)</small></td>
+                <td class="val-gain">8 veh <small>(-33%)</small></td>
+                <td class="val-gain">14,720 veh-s <small>(-36%)</small></td>
+                <td class="val-gain">2,303 veh <small>(+19%)</small></td>
+                <td class="val-gain">12.1 s <small>(-34%)</small></td>
+                <td class="val-gain">612 s <small>(-54%)</small></td>
+                <td style="color: var(--primary); font-weight: 600;">Best Stability & Generalization ⭐</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Project Artifacts & Graphs Gallery -->
+      <section class="benchmark-section">
+        <div class="section-head">
+          <h3>Simulation Graphs & Output Artifacts</h3>
+          <p>High-resolution outputs generated during research experiments. Click any card to inspect at full size.</p>
+        </div>
+
+        <div class="gallery-grid" id="researchGallery">
+          <!-- Card 1: Static Graph -->
+          <div class="gallery-card" data-img="/images/Staticgraph.jpeg" data-title="Static Model — Queue Length Output" data-desc="Shows high queue buildup fluctuating between 6 and 12 vehicles due to inflexible static timer cycles.">
+            <div class="gallery-img-wrap">
+              <span class="gallery-overlay-badge">Queue Length Plot</span>
+              <img src="/images/Staticgraph.jpeg" alt="Static Model Queue Graph" />
+            </div>
+            <div class="gallery-info">
+              <h4>Static Model Queue Analysis</h4>
+              <p>Average queue ~7.77 vehicles, Total delay ~23,000 veh-seconds.</p>
+            </div>
+          </div>
+
+          <!-- Card 2: Q-Learning Graph -->
+          <div class="gallery-card" data-img="/images/QGraph.jpeg" data-title="Tabular Q-Learning — Queue Length Output" data-desc="Demonstrates ~38% queue reduction and rapid clearing of queued platoons using tabular state lookup.">
+            <div class="gallery-img-wrap">
+              <span class="gallery-overlay-badge">Queue Length Plot</span>
+              <img src="/images/QGraph.jpeg" alt="Q-Learning Model Queue Graph" />
+            </div>
+            <div class="gallery-info">
+              <h4>Q-Learning Queue Analysis</h4>
+              <p>Average queue reduced to 4.82 vehicles (-38%), Throughput 2368 veh (+22%).</p>
+            </div>
+          </div>
+
+          <!-- Card 3: DQN Graph -->
+          <div class="gallery-card" data-img="/images/DQNgraph.jpeg" data-title="Deep Q-Network (DQN) — Queue Length Output" data-desc="Shows smooth neural generalization, stabilizing queues under 8 vehicles even during traffic bursts.">
+            <div class="gallery-img-wrap">
+              <span class="gallery-overlay-badge">Queue Length Plot</span>
+              <img src="/images/DQNgraph.jpeg" alt="DQN Model Queue Graph" />
+            </div>
+            <div class="gallery-info">
+              <h4>DQN Queue Analysis</h4>
+              <p>Average queue reduced to 5.05 vehicles, Max travel time down 54%.</p>
+            </div>
+          </div>
+
+          <!-- Card 4: Flowchart -->
+          <div class="gallery-card" data-img="/images/NoteGPT-Flowchart-1757804082141.png" data-title="Reinforcement Learning System Flowchart" data-desc="Complete architecture pipeline: SUMO simulation -> TraCI API -> E1 Lane Detectors -> RL State Vector -> Neural Policy -> Signal Action execution.">
+            <div class="gallery-img-wrap">
+              <span class="gallery-overlay-badge">System Architecture</span>
+              <img src="/images/NoteGPT-Flowchart-1757804082141.png" alt="RL System Flowchart" />
+            </div>
+            <div class="gallery-info">
+              <h4>RL Pipeline Flowchart</h4>
+              <p>End-to-end feedback loop between SUMO microsimulation and RL controllers.</p>
+            </div>
+          </div>
+
+          <!-- Card 5: Static Metrics -->
+          <div class="gallery-card" data-img="/images/Staticmetrics.jpeg" data-title="Static Model — Execution & ITS Metrics" data-desc="Terminal output capture of the Static controller run in Python with complete ITS metric summary.">
+            <div class="gallery-img-wrap">
+              <span class="gallery-overlay-badge">ITS Metrics Output</span>
+              <img src="/images/Staticmetrics.jpeg" alt="Static Metrics Log" />
+            </div>
+            <div class="gallery-info">
+              <h4>Static Metrics Log</h4>
+              <p>Baseline delay and travel time statistics.</p>
+            </div>
+          </div>
+
+          <!-- Card 6: Q-Learning Metrics -->
+          <div class="gallery-card" data-img="/images/Qmetrics.jpeg" data-title="Q-Learning — Execution & ITS Metrics" data-desc="Terminal metrics printout showing performance gains over 3000 steps.">
+            <div class="gallery-img-wrap">
+              <span class="gallery-overlay-badge">ITS Metrics Output</span>
+              <img src="/images/Qmetrics.jpeg" alt="Q-Learning Metrics Log" />
+            </div>
+            <div class="gallery-info">
+              <h4>Q-Learning Metrics Log</h4>
+              <p>Empirical evidence of ~39% delay reduction.</p>
+            </div>
+          </div>
+
+          <!-- Card 7: DQN Metrics -->
+          <div class="gallery-card" data-img="/images/DQN metrics.jpeg" data-title="DQN Model — Execution & ITS Metrics" data-desc="Full Deep Q-Network training and evaluation terminal log.">
+            <div class="gallery-img-wrap">
+              <span class="gallery-overlay-badge">ITS Metrics Output</span>
+              <img src="/images/DQN metrics.jpeg" alt="DQN Metrics Log" />
+            </div>
+            <div class="gallery-info">
+              <h4>DQN Metrics Log</h4>
+              <p>Neural inference ITS metrics validation.</p>
+            </div>
+          </div>
+
+          <!-- Card 8: Research Poster Summary -->
+          <div class="gallery-card" data-img="/images/WhatsApp Image 2025-11-19 at 10.11.35 PM.jpg" data-title="Research Summary & Key Findings" data-desc="Overall conclusion poster highlighting 35-40% delay reduction, throughput gains, and edge deployment feasibility on Jetson Nano / Raspberry Pi.">
+            <div class="gallery-img-wrap">
+              <span class="gallery-overlay-badge">Project Summary</span>
+              <img src="/images/WhatsApp Image 2025-11-19 at 10.11.35 PM.jpg" alt="Research Summary Poster" />
+            </div>
+            <div class="gallery-info">
+              <h4>Conclusion & Hardware Feasibility</h4>
+              <p>Edge AI deployment summary on NVIDIA Jetson & Raspberry Pi.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: SUMO ARCHITECTURE & CODE           -->
+    <!-- ========================================== -->
+    <div class="tab-content" id="tab-code">
+      <section class="benchmark-section">
+        <div class="section-head">
+          <h3>SUMO Configuration & Python TraCI Controller Architecture</h3>
+          <p>Inspect the underlying scripts and setup used to train and run the models.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Code snippet 1: DQN Architecture -->
+          <div>
+            <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--primary);">
+              <span>🧠</span> DQN Model Definition (TensorFlow / Keras)
+            </h4>
+            <pre class="code-box"><code>def build_model(state_size=7, action_size=2):
+    model = keras.Sequential([
+        layers.Input(shape=(state_size,)),
+        layers.Dense(24, activation='relu'),
+        layers.Dense(24, activation='relu'),
+        layers.Dense(action_size, activation='linear')
+    ])
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001), loss='mse')
+    return model
+
+# State Space (7 values):
+# [Node1_2_EB_0, Node1_2_EB_1, Node1_2_EB_2, Node2_7_SB_0, Node2_7_SB_1, Node2_7_SB_2, current_phase]
+
+# Action Space (2 values):
+# 0 = Keep current phase
+# 1 = Switch to next phase (subject to MIN_GREEN_STEPS = 5)
+
+# Reward Function:
+# R = -float(sum(state[:-1]))  # Negative sum of all lane queues</code></pre>
+          </div>
+
+          <!-- Code snippet 2: TraCI Control Loop -->
+          <div>
+            <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--accent-green);">
+              <span>⚡</span> TraCI Control & Feedback Loop
+            </h4>
+            <pre class="code-box"><code># Initialize SUMO simulation via TraCI
+traci.start([sumo_binary, "-c", "RL.sumocfg", "--step-length", "1.0"])
+
+for step in range(TOTAL_STEPS):
+    traci.simulationStep()
+    
+    # Read E1 Lane Area Detectors
+    state = get_state()
+    
+    # Choose action using epsilon-greedy or DQN policy
+    action = get_action_from_policy(state)
+    
+    # Check minimum green safety constraint
+    if action == 1 and (step - last_switch_step >= MIN_GREEN_STEPS):
+        switch_to_next_phase()
+        last_switch_step = step
+
+    # Collect reward and record ITS metrics
+    reward = get_reward(state)</code></pre>
+          </div>
+
+          <!-- Local Setup Guide -->
+          <div>
+            <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--accent-amber);">
+              <span>💻</span> Running SUMO Scripts Locally on Windows
+            </h4>
+            <pre class="code-box"><code># 1. Ensure SUMO is installed (v1.24.0 or compatible)
+# 2. Set environment variable:
+$env:SUMO_HOME = "C:\Program Files (x86)\Eclipse\Sumo"
+
+# 3. Run the controllers:
+python DQN.py      # Runs Deep Q-Network Agent with live GUI
+python QL.py       # Runs Tabular Q-Learning Agent
+python Static.py   # Runs Static Baseline Controller</code></pre>
+          </div>
+
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Full-Screen Lightbox Modal for Artifacts -->
+  <div class="modal-backdrop" id="imageModal" aria-hidden="true" role="dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Graph Preview</h3>
+        <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <img id="modalImg" src="" alt="Artifact view" />
+        <p class="modal-description" id="modalDesc"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-credits">
+      <strong>Traffic Signal Optimization Project</strong> • Indian Institute of Information Technology, Nagpur
+      <br>
+      <span>Contributors: Saurabh Kumar, Darshan Tate, Sai Chandra Mouli • Mentor: Dr. Rashmi Pandhare</span>
+    </div>
+    <div class="footer-status">
+      <span>AutoFlow RL Web Dashboard • Running on Localhost</span>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

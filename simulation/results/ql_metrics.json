@@ -1,0 +1,12 @@
+{
+  "total_delay": 1036.0,
+  "avg_queue": 20.72,
+  "max_queue": 41,
+  "throughput": 44,
+  "avg_travel_time": 14.11,
+  "p90_travel_time": 28.7,
+  "max_travel_time": 34.0,
+  "controller": "Tabular Q-Learning",
+  "steps": 50,
+  "unique_states_explored": 47
+}

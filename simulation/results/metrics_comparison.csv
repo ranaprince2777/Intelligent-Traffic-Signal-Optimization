@@ -1,0 +1,7 @@
+Metric,Static Baseline,Tabular Q-Learning,DQN,QL vs Static (%),DQN vs Static (%)
+Average Queue (veh),24.44,25.59,37.44,+4.71%,+53.19%
+Maximum Queue (veh),40,41,68,+2.5%,+70.0%
+Total Delay (veh-s),4888.0,5118.0,7488.0,+4.71%,+53.19%
+Throughput (veh),229,217,192,-5.24%,-16.16%
+Average Travel Time (s),20.72,21.47,29.97,+3.62%,+44.64%
+Max Travel Time (s),49.0,53.0,55.0,+8.16%,+12.24%

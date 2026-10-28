@@ -1,0 +1,32 @@
+# Node.js dependencies and build
+node_modules/
+dist/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments
+.env
+.env.*
+venv/
+env/
+.venv/
+
+# Large SUMO output logs (avoid bloated git repositories)
+det_output.xml
+*.out.xml
+*.log
+
+# Temporary and editor files
+tempCodeRunnerFile.py
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

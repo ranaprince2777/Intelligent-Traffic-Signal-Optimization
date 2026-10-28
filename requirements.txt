@@ -1,0 +1,18 @@
+# Intelligent Traffic Signal Optimization (AutoFlow RL)
+# Core Python Dependencies
+
+numpy>=1.24.0
+matplotlib>=3.7.0
+pandas>=2.0.0
+pytest>=7.4.0
+
+# Optional: Eclipse SUMO Python TraCI Interface
+# Note: TraCI is typically installed alongside Eclipse SUMO (SUMO_HOME/tools).
+# Can also be installed directly from PyPI for TraCI client scripting:
+traci>=1.18.0
+sumolib>=1.18.0
+
+# Optional: Deep Learning Framework for DQN
+# If TensorFlow is not installed, the DQN controller includes an automatic
+# pure-NumPy fallback engine with identical architecture and forward inference.
+tensorflow>=2.12.0; platform_machine != "arm64"
